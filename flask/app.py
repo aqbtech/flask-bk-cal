@@ -193,4 +193,4 @@ def improve_courses():
                            total_credits_cddt=total_credits_cddt, remaining_credits=remaining_credits)
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True, host='0.0.0.0')
