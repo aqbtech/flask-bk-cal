@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>GPA Calculator</title>
+</head>
+<body>
+    <h1>GPA Calculator</h1>
+    <!-- Form nhập danh sách môn học -->
+    <form method="POST" action="/">
+        <label for="courses_html">Courses HTML:</label>
+        <textarea id="courses_html" name="courses_html" rows="10" cols="50">{% if parsed_courses %}{{ request.form['courses_html'] }}{% endif %}</textarea><br>
+        <label for="total_credits_cddt">Total Credits CDDT:</label>
+        <input type="number" id="total_credits_cddt" name="total_credits_cddt" value="{% if total_credits_cddt %}{{ total_credits_cddt }}{% endif %}" required><br>
+        <button type="submit">Submit Courses</button>
+    </form>
+
+    {% if parsed_courses %}
+    <!-- Form tính toán GPA hiện tại -->
+    <form method="POST" action="/calculate_gpa">
+        <input type="hidden" name="courses_html" value="{{ request.form['courses_html'] }}">
+        <input type="hidden" name="total_credits_cddt" value="{{ request.form['total_credits_cddt'] }}">
+        <button type="submit">Calculate GPA</button>
+    </form>
+
+    <!-- Form tính GPA cần thiết để đạt mục tiêu -->
+    <form method="POST" action="/calculate_required_gpa">
+        <input type="hidden" name="courses_html" value="{{ request.form['courses_html'] }}">
+        <input type="hidden" name="total_credits_cddt" value="{{ request.form['total_credits_cddt'] }}">
+        <label for="target_gpa">Target GPA:</label>
+        <input type="number" id="target_gpa" name="target_gpa" step="0.001" required><br>
+        <button type="submit">Calculate Required GPA</button>
+    </form>
+
+    <!-- Form gợi ý các môn cải thiện -->
+    <form method="POST" action="/suggest_courses">
+        <input type="hidden" name="courses_html" value="{{ request.form['courses_html'] }}">
+        <input type="hidden" name="total_credits_cddt" value="{{ request.form['total_credits_cddt'] }}">
+        <label for="num_suggestions">Number of Suggestions:</label>
+        <input type="number" id="num_suggestions" name="num_suggestions" required><br>
+        <button type="submit">Suggest Courses to Improve</button>
+    </form>
+    {% endif %}
+
+    {% if gpa is not none %}
+    <h2>Results</h2>
+    <p><strong>Current GPA:</strong> {{ gpa }}</p>
+    <p><strong>Total Credits Earned:</strong> {{ total_credits_earned }}</p>
+    {% endif %}
+
+    {% if required_gpa is not none %}
+    <p><strong>Remaining Credits:</strong> {{ remaining_credits }}</p>
+    <p><strong>Required GPA for Remaining Credits:</strong> {{ required_gpa }}</p>
+    {% endif %}
+
+    {% if suggested_courses is not none %}
+    <h3>Suggested Courses to Improve:</h3>
+    <ul>
+        {% for course in suggested_courses %}
+        <li>{{ course[1] }} ({{ course[0] }}): Credits: {{ course[2] }}, GPA: {{ course[5] }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if parsed_courses %}
+    <h3>All Courses:</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Course Code</th>
+                <th>Course Name</th>
+                <th>Credits</th>
+                <th>Score</th>
+                <th>Letter Grade</th>
+                <th>GPA</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for course in parsed_courses %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ course[0] }}</td>
+                <td>{{ course[1] }}</td>
+                <td>{{ course[2] }}</td>
+                <td>{{ course[3] }}</td>
+                <td>{{ course[4] }}</td>
+                <td>{{ course[5] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if comparison_results %}
+    <h3>Comparison of Improvement Groups</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Group</th>
+                <th>Improved GPA</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for group, gpa in comparison_results.items() %}
+            <tr>
+                <td>{{ group }}</td>
+                <td>{{ gpa }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+</body>
+</html>
